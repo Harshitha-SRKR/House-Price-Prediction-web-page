@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fraud Probability Prediction</title>
+<style>
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: #f5f7fa;
+  color: #333;
+}
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+h2 {
+  color: #2c3e50;
+  margin-bottom: 5px;
+}
+.welcome {
+  color: #7f8c8d;
+  margin-bottom: 30px;
+  font-size: 1.1em;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+.form-group {
+  margin-bottom: 15px;
+}
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+input, select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: border 0.3s;
+}
+input:focus, select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+button {
+  grid-column: span 2;
+  padding: 12px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+button:hover {
+  background-color: #2980b9;
+}
+.result-container {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  border-left: 4px solid #3498db;
+}
+.result-title {
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+#fraud-score {
+  font-size: 24px;
+  font-weight: 700;
+  color: #e67e22;
+}
+.logout {
+  display: inline-block;
+  margin-top: 20px;
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+.logout:hover {
+  color: #2980b9;
+  text-decoration: underline;
+}
+.loading {
+  color: #7f8c8d;
+  font-style: italic;
+}
+.error {
+  color: #e74c3c;
+}
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  button {
+    grid-column: span 1;
+  }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>Hello, {{ user }}</h2>
+<p class="welcome">Fill in the property details to predict fraud probability</p>
+<form id="fraud-form">
+  <div class="form-grid">
+    <!-- Numerical Inputs -->
+    <div class="form-group">
+      <label for="Price">Price:</label>
+      <input type="number" id="Price" name="Price" required>
+    </div>
+    <div class="form-group">
+      <label for="Size_in_Sqft">Size in Sqft:</label>
+      <input type="number" id="Size_in_Sqft" name="Size_in_Sqft" required>
+    </div>
+    <div class="form-group">
+      <label for="Listing_Age_Days">Listing Age (Days):</label>
+      <input type="number" id="Listing_Age_Days" name="Listing_Age_Days" required>
+    </div>
+    <div class="form-group">
+      <label for="Building_Age">Building Age (Years):</label>
+      <input type="number" id="Building_Age" name="Building_Age" required>
+    </div>
+    <div class="form-group">
+      <label for="Number_of_Complaints_Filed">Number of Complaints Filed:</label>
+      <input type="number" id="Number_of_Complaints_Filed" name="Number_of_Complaints_Filed" required>
+    </div>
+    <div class="form-group">
+      <label for="Agent_Rating">Agent Rating:</label>
+      <input type="number" id="Agent_Rating" name="Agent_Rating" step="0.1" min="0" max="5" required>
+    </div>
+    <!-- Categorical Inputs -->
+    <div class="form-group">
+      <label for="Owner_Verified">Owner Verified:</label>
+      <select id="Owner_Verified" name="Owner_Verified" required>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="Legal_Issues">Legal Issues:</label>
+      <select id="Legal_Issues" name="Legal_Issues" required>
+        <option value="No">No</option>
+        <option value="Yes">Yes</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="Property_Status">Property Status:</label>
+      <select id="Property_Status" name="Property_Status" required>
+        <option value="Ready">Ready</option>
+        <option value="Under Construction">Under Construction</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="Amenities_Available">Amenities Available:</label>
+      <select id="Amenities_Available" name="Amenities_Available" required>
+        <option value="Basic">Basic</option>
+        <option value="Standard">Standard</option>
+        <option value="Luxury">Luxury</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="Government_Approval_Status">Government Approval Status:</label>
+      <select id="Government_Approval_Status" name="Government_Approval_Status" required>
+        <option value="Approved">Approved</option>
+        <option value="Pending">Pending</option>
+        <option value="Rejected">Rejected</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="Disputed_Ownership_Claims">Disputed Ownership Claims:</label>
+      <select id="Disputed_Ownership_Claims" name="Disputed_Ownership_Claims" required>
+        <option value="No">No</option>
+        <option value="Yes">Yes</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="Property_Tax_Paid_Status">Property Tax Paid Status:</label>
+      <select id="Property_Tax_Paid_Status" name="Property_Tax_Paid_Status" required>
+        <option value="Paid">Paid</option>
+        <option value="Unpaid">Unpaid</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="Mortgage_Status">Mortgage Status:</label>
+      <select id="Mortgage_Status" name="Mortgage_Status" required>
+        <option value="Clear">Clear</option>
+        <option value="Under Mortgage">Under Mortgage</option>
+      </select>
+    </div>
+  </div>
+  <button type="button" onclick="submitFraudPrediction()">Predict Fraud Probability</button>
+</form>
+<div class="result-container">
+  <div class="result-title">Fraud Probability Score:</div>
+  <div id="fraud-score" class="loading">Submit the form to get prediction</div>
+</div>
+<a href="{{ url_for('logout') }}" class="logout">Logout</a>
+</div>
+<script>
+function submitFraudPrediction() {
+  const form = document.getElementById('fraud-form');
+  const resultElement = document.getElementById('fraud-score');
+  const formData = new FormData(form);
+  const data = {};
+  formData.forEach((value, key) => {
+    data[key] = isNaN(value) || key.includes("Status") || key.includes("Claims") || key.includes("Verified") ? value : Number(value);
+  });
+  resultElement.textContent = "Calculating...";
+  resultElement.className = "loading";
+  fetch('/get_fraud_score', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(result => {
+    if (result.status === 'success') {
+      resultElement.textContent = result.fraud_score;
+      resultElement.className = "";
+    } else {
+      resultElement.textContent = "Prediction failed";
+      resultElement.className = "error";
+      alert("Error: " + (result.error || "Unknown error occurred"));
+    }
+  })
+  .catch(error => {
+    resultElement.textContent = "Request failed";
+    resultElement.className = "error";
+    alert("Failed to connect to server.");
+    console.error('Error:', error);
+  });
+}
+</script>
+</body>
+</html>

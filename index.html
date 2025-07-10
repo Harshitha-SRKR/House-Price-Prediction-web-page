@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>House Price Prediction</title>
+<style>
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: #f5f7fa;
+  color: #333;
+}
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+h2 {
+  color: #2c3e50;
+  margin-bottom: 5px;
+}
+.welcome {
+  color: #7f8c8d;
+  margin-bottom: 30px;
+  font-size: 1.1em;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+.form-group {
+  margin-bottom: 15px;
+}
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+input, select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  transition: border 0.3s;
+}
+input:focus, select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+button {
+  grid-column: span 2;
+  padding: 12px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 10px;
+}
+button:hover {
+  background-color: #2980b9;
+}
+.result-container {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  border-left: 4px solid #3498db;
+}
+.result-title {
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+#price {
+  font-size: 24px;
+  font-weight: 700;
+  color: #27ae60;
+}
+.logout {
+  display: inline-block;
+  margin-top: 20px;
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+.logout:hover {
+  color: #2980b9;
+  text-decoration: underline;
+}
+.loading {
+  color: #7f8c8d;
+  font-style: italic;
+}
+.error {
+  color: #e74c3c;
+}
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  button {
+    grid-column: span 1;
+  }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>Welcome, {{ user }}</h2>
+  <p class="welcome">Fill in the property details to get a price prediction</p>
+  <form id="prediction-form">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="bedrooms">Number of Bedrooms:</label>
+        <input type="number" id="bedrooms" name="number of bedrooms" min="1" max="10" required>
+      </div>
+      <div class="form-group">
+        <label for="bathrooms">Number of Bathrooms:</label>
+        <input type="number" id="bathrooms" name="number of bathrooms" min="1" max="8" step="0.5" required>
+      </div>
+      <div class="form-group">
+        <label for="living_area">Living Area (sq ft):</label>
+        <input type="number" id="living_area" name="living area" min="100" required>
+      </div>
+      <div class="form-group">
+        <label for="lot_area">Lot Area (sq ft):</label>
+        <input type="number" id="lot_area" name="lot area" min="500" required>
+      </div>
+      <div class="form-group">
+        <label for="waterfront">Waterfront Present:</label>
+        <select id="waterfront" name="waterfront present" required>
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="grade">Grade of the House (1-13):</label>
+        <input type="number" id="grade" name="grade of the house" min="1" max="13" value="7" required>
+      </div>
+      <div class="form-group">
+        <label for="schools">Number of Schools Nearby:</label>
+        <input type="number" id="schools" name="Number ofschools nearby" min="0" value="5" required>
+      </div>
+      <div class="form-group">
+        <label for="airport">Distance from Airport (km):</label>
+        <input type="number" id="airport" name="Distance from the airport" min="0" step="0.1" value="25" required>
+      </div>
+      <div class="form-group">
+        <label for="built_year">Built Year:</label>
+        <input type="number" id="built_year" name="Built Year" min="1800" max="2023" required>
+      </div>
+      <div class="form-group">
+        <label for="renovation_year">Renovation Year (0 if never):</label>
+        <input type="number" id="renovation_year" name="Renovation Year" min="0" max="2023" value="0">
+      </div>
+      <div class="form-group">
+        <label for="basement_area">Basement Area (sq ft):</label>
+        <input type="number" id="basement_area" name="Area of the basement" min="0" value="0">
+      </div>
+    </div>
+    <button type="button" onclick="submitPrediction()">Predict Price</button>
+  </form>
+  <div class="result-container">
+    <div class="result-title">Predicted Price:</div>
+    <div id="price" class="loading">Submit the form to get prediction</div>
+  </div>
+  <a href="{{ url_for('logout') }}" class="logout">Logout</a>
+</div>
+<script>
+function submitPrediction() {
+  const form = document.getElementById('prediction-form');
+  const resultElement = document.getElementById('price');
+  const formData = new FormData(form);
+  const data = {};
+  formData.forEach((value, key) => {
+    data[key] = isNaN(value) ? value : Number(value);
+  });
+  resultElement.textContent = "Calculating...";
+  resultElement.className = "loading";
+  fetch('/get_price', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(result => {
+    if (result.status === 'success') {
+      resultElement.textContent = result.price;
+      resultElement.className = "";
+    } else {
+      resultElement.textContent = "Prediction failed";
+      resultElement.className = "error";
+      alert("Error: " + (result.error || "Unknown error occurred"));
+    }
+  })
+  .catch(error => {
+    resultElement.textContent = "Request failed";
+    resultElement.className = "error";
+    console.error('Error:', error);
+    alert("Failed to connect to the server. Please try again.");
+  });
+}
+</script>
+</body>
+</html>
